@@ -1,6 +1,9 @@
 import praw
+import wikipedia
 import config
 import time
+import wikiapi
+import os
 
 def bot_login():
 	print("Logging in...")
@@ -13,22 +16,50 @@ def bot_login():
 
 	return r
 
+def get_article(comment):
+	try:	
+		print("Get search query..")
+		body = comment
+		query = body.split("!search",1)[1]
+		print("Query obtained")
+		print("Searching article..")
+		page = wikipedia.page(query.strip())
+		print("Article found!")
+		print("Generating article content...")
+		return "**" + page.title + "**" + "\n" + "\n" + page.summary + "\n"	+ "\n"+ "[Source](" + page.url + ")"
+	except wikipedia.exceptions.PageError as e:
+		print("Can't find file")
+		return "Error: No article found about *" + query.strip() + "*."
+
+
+print("Done!")
 
 def run_bot(r, comments_replied_to):
-
-
 	print("Obtaining 25 comments...")
 	for comment in r.subreddit('test').comments(limit=25):
-		if "Lol" in comment.body and comment.id not in comments_replied_to and not comment.author == r.user.me():
-			comment.reply("Lol found")
+		if "!search" in comment.body and comment.id not in comments_replied_to and not comment.author == r.user.me():
+			comment.reply(get_article(comment.body))
+			with open("comments_replied_to.txt", "a") as commentIDFile:
+				commentIDFile.write(comment.id + "\n")
 			comments_replied_to.append(comment.id)
 
 	print(comments_replied_to)
-	print("Sleeping for 10 seconds")
-	#sleep for 10 seconds
-	time.sleep(10)
+	print("Sleeping for 60 seconds")
+	#sleep for 60 seconds
+	time.sleep(60)
+
+def get_saved_comments():
+	if not os.path.isfile("comments_replied_to.txt"):
+		comments_replied_to = []
+	else:
+		with open("comments_replied_to.txt", "r") as commentIDFile:
+			comments_replied_to = commentIDFile.read()
+			comments_replied_to = comments_replied_to.split("\n")
+			comments_replied_to = list(filter(None, comments_replied_to))
+	return comments_replied_to
+
 
 r = bot_login()
-comments_replied_to = []
+comments_replied_to = get_saved_comments()
 while True:
 	run_bot(r, comments_replied_to)
