@@ -22,10 +22,10 @@ def get_article(comment):
 		query = body.split("!search",1)[1]
 		print("Query obtained")
 		print("Searching article..")
-		print("Article about " + query + " found!")
 		page = wikipedia.page(query.strip())
-		print("Article found!")
+		print("Article about " + query.strip() + " found!")
 		print("Generating article content...")
+		print("Done!")
 		return "**" + page.title + "**" + "\n" + "\n" + page.summary + "\n"	+ "\n"+ "[Source](" + page.url + ")"
 	except wikipedia.exceptions.PageError as e:
 		print("Can't find file")
@@ -34,13 +34,11 @@ def get_article(comment):
 		print("Query too disambiguous")
 		return "Too disambiguous, be more specific please. (ex: !search [query] film)"
 
-print("Done!")
-
 def run_bot(r, comments_replied_to):
 	count = 0
 	print("Obtaining 25 comments...")
 	for comment in r.subreddit('test').comments(limit=25):
-		if "!search" in comment.body.lower() and comment.id not in comments_replied_to:
+		if "!search" in comment.body.lower() and comment.id not in comments_replied_to and not comment.author == r.user.me():
 			comment.reply(get_article(comment.body.lower()))
 			count = count + 1
 			with open("comments_replied_to.txt", "a") as commentIDFile:
