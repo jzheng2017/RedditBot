@@ -20,4 +20,5 @@ Zulke bots bestaan al maar het doel van deze bot is om te leren werken met APIs.
 ---
 # How to use it? 
 Step 1. Change the config settings to your account
-Step 2. Run it via command line.
+
+Step 2. Run it via command line. -> cd \path -> redditbot.py
